@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: tf-apply-execution  # Static name for ArgoCD compatibility
+  namespace: tf-automation-gate
+spec:
+  taskRef:
+    name: terraform-apply
+  serviceAccountName: tf-runner-sa
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: tf-pvc
