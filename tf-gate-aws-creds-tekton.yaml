@@ -1,0 +1,16 @@
+# 1. The New Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tf-automation-gate
+
+---
+# 2. The New Service Account
+# This is the "Identity" that will run your Modular Terraform
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tf-runner-sa
+  namespace: tf-automation-gate
+secrets:
+  - name: aws-creds
