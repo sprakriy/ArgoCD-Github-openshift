@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: tf-run-infra-
+  name: terraform-infra-run # A solid, static name
   namespace: tf-automation-gate
 spec:
   taskRef:
