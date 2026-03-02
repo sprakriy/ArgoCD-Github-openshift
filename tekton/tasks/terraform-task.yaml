@@ -1,13 +1,28 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: terraform-apply
+  name: terraform-executor
   namespace: tf-automation-gate
 spec:
+  params:
+    - name: git-url
+      description: "The HTTPS URL of the repo to clone"
+    - name: action
+      default: "apply"
+      description: "Set to 'apply' or 'destroy' for Step 5"
   workspaces:
     - name: source
+      description: "This is our 5Gi tf-pvc workbench"
   steps:
-    - name: tf-init-apply
+    - name: fetch-source
+      image: alpine/git
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        # Clean the workspace so old runs from other repos don't conflict
+        rm -rf ./* .??* git clone $(params.git-url) .
+    
+    - name: tf-init-execute
       image: hashicorp/terraform:1.6.0
       workingDir: $(workspaces.source.path)/terraform
       env:
@@ -21,7 +36,7 @@ spec:
             secretKeyRef:
               name: aws-creds
               key: AWS_SECRET_ACCESS_KEY
-        - name: AWS_SESSION_TOKEN # Added this based on your jq output
+        - name: AWS_SESSION_TOKEN
           valueFrom:
             secretKeyRef:
               name: aws-creds
@@ -29,4 +44,11 @@ spec:
       script: |
         #!/bin/sh
         terraform init
-        terraform apply -auto-approve
+        
+        if [ "$(params.action)" == "destroy" ]; then
+          echo "Executing SELECTIVE DESTROY operation..."
+          terraform destroy -auto-approve
+        else
+          echo "Executing SELECTIVE APPLY operation..."
+          terraform apply -auto-approve
+        fi
