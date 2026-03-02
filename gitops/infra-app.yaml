@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/YOUR_GITHUB_USER/YOUR_NEW_REPO.git'
+    repoURL: 'https://github.com/sprakriy/ArgoCD-Github-openshift.git'
     targetRevision: HEAD
-    path: terraform # Only watch the terraform modular folder
+    path: tekton/runs # Only watch the terraform modular folder
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tf-automation-gate
