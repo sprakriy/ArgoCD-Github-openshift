@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: tf-run-infra-
+  namespace: tf-automation-gate
+spec:
+  taskRef:
+    name: terraform-executor # This points to your generic Task
+  params:
+    - name: git-url
+      value: "https://github.com/sprakriy/ci-cd-testing.git" # <--- REPO GOES HERE
+    - name: terraform-dir
+      value: "." # <--- Since your main.tf is in the root
+    - name: action
+      value: "apply" # Change this to "destroy" for Objective 1/Step 5
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: tf-pvc # Your "Decent Size" 5Gi PVC

@@ -20,8 +20,9 @@ spec:
       script: |
         #!/bin/sh
         # Clean the workspace so old runs from other repos don't conflict
-        rm -rf ./* .??* git clone $(params.git-url) .
-    
+        rm -rf ./* .??* 
+        git clone $(params.git-url)/$(params.terraform-dir) .
+
     - name: tf-init-execute
       image: hashicorp/terraform:1.6.0
       workingDir: $(workspaces.source.path)/terraform
