@@ -8,7 +8,9 @@ spec:
   source:
     repoURL: 'https://github.com/sprakriy/ArgoCD-Github-openshift.git'
     targetRevision: HEAD
-    path: tekton/runs # Only watch the terraform modular folder
+    path: tekton # Only watch the terraform modular folder
+    directory:
+      recurse: true # Watch all subfolders in tekton
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tf-automation-gate
