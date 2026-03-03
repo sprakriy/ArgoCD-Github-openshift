@@ -54,6 +54,7 @@ spec:
         key    = "openshift-project/terraform.tfstate"
         region = "us-east-1"
         }
+        }
         EOF
 
         # 3. Use -chdir to point Terraform to the folder
