@@ -12,7 +12,7 @@ spec:
     - name: terraform-dir
       value: "." # <--- Since your main.tf is in the root
     - name: action
-      value: "destroy" # Change this to "destroy" for Objective 1/Step 5
+      value: "apply" # Change this to "destroy" for Objective 1/Step 5
   workspaces:
     - name: source
       persistentVolumeClaim:
