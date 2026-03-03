@@ -61,9 +61,8 @@ spec:
         # This replaces 'cd' entirely.
         terraform -chdir=${TF_DIR} init -input=false
 
-        # 4. Execute the Action
-        if [ "$(params.action)" == "destroy" ]; then
-        terraform -chdir=${TF_DIR} destroy -auto-approve
-        else
-        terraform -chdir=${TF_DIR} apply -auto-approve
-        fi
+        # 3. Direct Command Execution
+        # This will either run 'terraform destroy' or 'terraform apply'
+        # based exactly on what ArgoCD/Tekton passes. 
+        echo "Executing command: terraform $(params.action)"
+        terraform -chdir=${TF_DIR} $(params.action) -auto-approve
