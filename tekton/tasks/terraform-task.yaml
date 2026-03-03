@@ -40,11 +40,6 @@ spec:
             secretKeyRef:
               name: aws-creds
               key: AWS_SECRET_ACCESS_KEY
-        - name: AWS_SESSION_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: aws-creds
-              key: AWS_SESSION_TOKEN
       script: |
         #!/bin/sh
         terraform init
