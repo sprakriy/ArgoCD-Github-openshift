@@ -7,6 +7,9 @@ spec:
   params:
     - name: git-url
       description: "The HTTPS URL of the repo to clone"
+    - name: terraform-dir        # <--- ADD THIS BLOCK
+      description: "The sub-folder"
+      default: "."
     - name: action
       default: "apply"
       description: "Set to 'apply' or 'destroy' for Step 5"
