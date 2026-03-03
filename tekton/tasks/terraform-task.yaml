@@ -42,12 +42,27 @@ spec:
               key: AWS_SECRET_ACCESS_KEY
       script: |
         #!/bin/sh
-        terraform init
-        
+        # 1. Define where the code actually is
+        TF_DIR="$(workspaces.source.path)/$(params.terraform-dir)"
+
+        # 2. CREATE the backend file directly in that folder
+        # This ensures Terraform SEES it without us having to 'cd' into it.
+        cat <<EOF > ${TF_DIR}/backend_generated.tf
+        terraform {
+        backend "s3" {
+        bucket = "sp-01102026-aws-kub"
+        key    = "openshift-project/$(params.project-name).tfstate"
+        region = "us-east-1"
+        }
+        EOF
+
+        # 3. Use -chdir to point Terraform to the folder
+        # This replaces 'cd' entirely.
+        terraform -chdir=${TF_DIR} init -input=false
+
+        # 4. Execute the Action
         if [ "$(params.action)" == "destroy" ]; then
-          echo "Executing SELECTIVE DESTROY operation..."
-          terraform destroy -auto-approve
+        terraform -chdir=${TF_DIR} destroy -auto-approve
         else
-          echo "Executing SELECTIVE APPLY operation..."
-          terraform apply -auto-approve
+        terraform -chdir=${TF_DIR} apply -auto-approve
         fi
