@@ -3,7 +3,11 @@ kind: TaskRun
 metadata:
   name: terraform-infra-run # A solid, static name
   namespace: tf-automation-gate
+  annotations:
+    argocd.argoproj.io/hook: Sync       # <--- Tells Argo to execute this during sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation # <--- Cleans up the old run first
 spec:
+  serviceAccountName: tf-runner-sa # A ServiceAccount with permissions to manage PVCs and run Tasks
   taskRef:
     name: terraform-executor # This points to your generic Task
   params:

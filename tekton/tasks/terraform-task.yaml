@@ -40,6 +40,11 @@ spec:
             secretKeyRef:
               name: aws-creds
               key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_SESSION_TOKEN # <--- ADDED THIS TO COPE WITH YOUR 12-HOUR SESSION KEYS
+          valueFrom:
+            secretKeyRef:
+              name: aws-creds
+              key: AWS_SESSION_TOKEN
       script: |
         #!/bin/sh
         # 1. Define where the code actually is
