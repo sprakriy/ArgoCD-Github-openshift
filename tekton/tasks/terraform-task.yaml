@@ -7,7 +7,7 @@ spec:
   params:
     - name: git-url
       description: "The HTTPS URL of the repo to clone"
-    - name: terraform-dir        # <--- ADD THIS BLOCK
+    - name: terraform-dir
       description: "The sub-folder"
       default: "."
     - name: action
@@ -22,13 +22,12 @@ spec:
       workingDir: $(workspaces.source.path)
       script: |
         #!/bin/sh
-        # Clean the workspace so old runs from other repos don't conflict
         rm -rf ./* .??* 
-        git clone $(params.git-url)/$(params.terraform-dir) .
+        git clone $(params.git-url) .
 
     - name: tf-init-execute
       image: hashicorp/terraform:1.6.0
-      workingDir: $(workspaces.source.path)/$(params.terraform-dir)
+      workingDir: $(workspaces.source.path)  # Keep base path rooted
       env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
@@ -40,34 +39,29 @@ spec:
             secretKeyRef:
               name: aws-creds
               key: AWS_SECRET_ACCESS_KEY
-        - name: AWS_SESSION_TOKEN # <--- ADDED THIS TO COPE WITH YOUR 12-HOUR SESSION KEYS
+        - name: AWS_SESSION_TOKEN
           valueFrom:
             secretKeyRef:
               name: aws-creds
               key: AWS_SESSION_TOKEN
       script: |
         #!/bin/sh
-        # 1. Define where the code actually is
-        TF_DIR="$(workspaces.source.path)/$(params.terraform-dir)"
+        # Map target directory accurately from root
+        TARGET_DIR="$(workspaces.source.path)/$(params.terraform-dir)"
 
-        # 2. CREATE the backend file directly in that folder
-        # This ensures Terraform SEES it without us having to 'cd' into it.
-        cat <<EOF > ${TF_DIR}/backend_generated.tf
+        echo "✍️ Generating remote S3 state backend at: ${TARGET_DIR}/backend_generated.tf"
+        cat <<EOF > ${TARGET_DIR}/backend_generated.tf
         terraform {
-        backend "s3" {
-        bucket = "sp-01102026-aws-kub"
-        key    = "openshift-project/terraform.tfstate"
-        region = "us-east-1"
-        }
+          backend "s3" {
+            bucket = "sp-01102026-aws-kub"
+            key    = "openshift-project/terraform.tfstate"
+            region = "us-east-1"
+          }
         }
         EOF
 
-        # 3. Use -chdir to point Terraform to the folder
-        # This replaces 'cd' entirely.
-        terraform -chdir=${TF_DIR} init -input=false
+        echo "🔄 Initializing Modular Infrastructure..."
+        terraform -chdir="${TARGET_DIR}" init -input=false
 
-        # 3. Direct Command Execution
-        # This will either run 'terraform destroy' or 'terraform apply'
-        # based exactly on what ArgoCD/Tekton passes. 
-        echo "Executing command: terraform $(params.action)"
-        terraform -chdir=${TF_DIR} $(params.action) -auto-approve
+        echo "🚀 Executing Target Strategy: terraform $(params.action)"
+        terraform -chdir="${TARGET_DIR}" $(params.action) -auto-approve
