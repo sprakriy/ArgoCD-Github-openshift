@@ -1,0 +1,32 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tekton-triggers-listener-role
+  namespace: tf-automation-gate
+rules:
+  # Allow the listener to see and trigger templates/bindings
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["eventlisteners", "triggerbindings", "triggertemplates"]
+    verbs: ["get", "list", "watch"]
+  # Allow the listener to scale and spin up new execution pods
+  - apiGroups: ["tekton.dev"]
+    resources: ["taskruns", "pipelineruns"]
+    verbs: ["create", "get", "list", "watch"]
+  # Allow management of configmaps if needed by the framework
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-triggers-listener-binding
+  namespace: tf-automation-gate
+subjects:
+  - kind: ServiceAccount
+    name: tf-runner-sa
+    namespace: tf-automation-gate
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tekton-triggers-listener-role

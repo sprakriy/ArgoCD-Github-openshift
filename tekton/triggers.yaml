@@ -1,0 +1,59 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: tf-automation-gate
+spec:
+  params:
+    - name: git-url
+      value: $(body.repository.clone_url)
+    - name: git-revision
+      value: $(body.after)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: github-push-template
+  namespace: tf-automation-gate
+spec:
+  params:
+    - name: git-url
+      description: The git repository URL from the webhook payload
+    - name: git-revision
+      description: The specific commit SHA from the push event
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      metadata:
+        # Dynamically names each run (e.g., webhook-run-abc12) so they never conflict
+        generateName: webhook-run-
+        namespace: tf-automation-gate
+      spec:
+        serviceAccountName: tf-runner-sa
+        taskRef:
+          name: terraform-executor
+        params:
+          - name: git-url
+            value: $(tt.params.git-url)
+          - name: terraform-dir
+            value: "."
+          - name: action
+            value: "apply"   # <--- This will execute an apply when GitHub pushes a change
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: tf-pvc
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: github-webhook-listener
+  namespace: tf-automation-gate
+spec:
+  serviceAccountName: tf-runner-sa
+  triggers:
+    - name: github-push-event
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: github-push-template
