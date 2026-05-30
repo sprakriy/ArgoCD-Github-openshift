@@ -1670,3 +1670,15 @@ spec:
               type: RuntimeDefault
 
 ---
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging-triggers
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  enable-cluster-interceptors: "true"
+  require-ca-bundle: "false"
