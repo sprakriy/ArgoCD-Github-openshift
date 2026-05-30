@@ -4,5 +4,6 @@ terraform {
     key    = "openshift-project/terraform.tfstate"
     region = "us-east-1"
     # No credentials here! We use OIDC/IRSA.
+    # Pipeline Kickoff Trigger: Run v1.0
   }
 }

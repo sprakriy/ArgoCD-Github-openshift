@@ -19,15 +19,24 @@ spec:
   steps:
     - name: fetch-source
       image: alpine/git
-      workingDir: $(workspaces.source.path)
+      imagePullPolicy: Always # <--- FORCES the engine to pull the remote manifest every time
+      #workingDir: $(workspaces.source.path)
+      # 🛠️ Rule 1: Allows the container engine to set workingDir to the PVC path
+      workspaces:
+        - name: source
       script: |
         #!/bin/sh
         rm -rf ./* .??* 
         git clone $(params.git-url) .
 
     - name: tf-init-execute
-      image: hashicorp/terraform:1.6.0
-      workingDir: $(workspaces.source.path)  # Keep base path rooted
+      #image: hashicorp/terraform:1.6.0
+      image: hashicorp/terraform:1.7.5 # <--- Explicitly multi-arch tagged image
+      imagePullPolicy: Always # <--- FORCES the engine to pull the remote manifest every time
+      #workingDir: $(workspaces.source.path)  # Keep base path rooted
+      # 🛠️ Rule 2: Allows Terraform to read the files cloned by the first step
+      workspaces:
+        - name: source
       env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
