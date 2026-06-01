@@ -113,4 +113,4 @@ Stream Pipeline Progress Live
 Track and stream log output logs directly from the running Terraform initialization container using the exact resource identifier:
 
 Bash
-oc logs -f taskrun/terraform-infra-run -n tf-automation-gate -c step-tf-init-execute
+oc logs -f taskrun/terraform-infra-run -n tf-automation-gate -c step-tf-init-execute# Triggering automated test run
